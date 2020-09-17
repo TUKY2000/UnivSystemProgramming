@@ -16,7 +16,7 @@ public class Lab {
         delims_regex = "([^a-zA-Z\\d])+";
     }
 
-    static public Set<String> findLongest(String filepath, int wordLenLim){
+    public Set<String> findLongest(String filepath, int wordLenLim){
 
         Set<String> longestWords = new HashSet<>();
 
