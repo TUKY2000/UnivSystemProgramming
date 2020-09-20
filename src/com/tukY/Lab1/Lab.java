@@ -2,69 +2,92 @@ package com.tukY.Lab1;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class Lab {
+public final class Lab {
 
-    String delims_regex;
+    static String re_delims = "([^a-zA-Z])+";;
 
+    private Lab(){}
 
-    public Lab() {
-        delims_regex = "([^a-zA-Z\\d])+";
-    }
-
-    public Set<String> findLongest(String filepath, int wordLenLim){
-
-        Set<String> longestWords = new HashSet<>();
+    static public List<String> findLongest(String filepath, int wordLenLim){
 
         try (FileReader reader = new FileReader(filepath)){
-            int MaxNOUniqueChar = 0;
-            int WordNOUniqueChar = 0;
 
-            char[] buf = new char[1024];
+            //region Init Variables
+            List<String> longestWords = new ArrayList<>();
+
+            int maxUniques = 0;
+
+            char[] buf = new char[4096];
             List<String> words = null;
 
-            while (reader.read(buf) != 0){
+            boolean flagLastSliced = false;
+            String wordLastSliced = "";
+
+            //endregion
+
+            while (reader.read(buf) != -1){
+
                 words = tokenize(new String(buf));
-                for(String word : words){
-                    if(word.length() > MaxNOUniqueChar) {
 
-                        if(word.length() > wordLenLim)
-                            word = padWord(word, wordLenLim);
-
-                        WordNOUniqueChar = noUniqueChar(word);
-                        if(WordNOUniqueChar < MaxNOUniqueChar)
-                            continue;
-                        if (WordNOUniqueChar == MaxNOUniqueChar)
-                            longestWords.add(word);
-                        else{
-                            longestWords.clear();
-                            longestWords.add(word);
-                            MaxNOUniqueChar = WordNOUniqueChar;
-                        }
-                    }
+                // region Last Word was Sliced
+                if(flagLastSliced){
+                    flagLastSliced = false;
+                    words.add(0, wordLastSliced.concat(words.remove(0)));
                 }
+
+                if(Character.isLetterOrDigit(buf[buf.length-1])) {
+                    flagLastSliced = true;
+                    wordLastSliced = words.remove(words.size() - 1);
+                }
+                // endregion
+
+                for (int i = 0; i < words.size(); i++) {
+                    maxUniques = toProcess(longestWords, words.get(i), maxUniques, wordLenLim);
+                }
+                Arrays.fill(buf, '\u0000');  // clear buffer array
             }
 
+            //  if last word of text was not processed
+            if(flagLastSliced)
+                toProcess(longestWords, wordLastSliced, maxUniques, wordLenLim);
+
+            return longestWords;
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-
-        return longestWords;
+        return new ArrayList<>();
     }
 
-    List<String> tokenize(String str){
-        return Arrays.asList(str.split(delims_regex));
+    static private int toProcess(List<String> longestWords, String word, int maxUniques, int maxLen){
+        if (word.length() >= maxUniques && !longestWords.contains(word)) {
+
+            if (word.length() > maxLen)
+                word = padWord(word, maxUniques);
+
+            int wordUniques = noUniqueChar(word);
+
+            if (wordUniques == maxUniques)
+                longestWords.add(word);
+            else if (wordUniques > maxUniques){
+                longestWords.clear();
+                longestWords.add(word);
+                return wordUniques;
+            }
+        }
+        return maxUniques;
     }
 
-    String padWord(String word, int maxlen){
-        return word.substring(0, maxlen);
+    static private List<String> tokenize(String str){
+        return new ArrayList<>(Arrays.asList(str.split(re_delims)));
     }
 
-    int noUniqueChar(String word){
+    static private String padWord(String word, int len){
+        return word.substring(0, len);
+    }
+
+    static  private int noUniqueChar(String word){
         int result = 0;
         for (int i = 0; i < word.length(); i++){
             result++;
