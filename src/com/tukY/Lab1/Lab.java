@@ -6,7 +6,8 @@ import java.util.*;
 
 public final class Lab {
 
-    static String re_delims = "([^a-zA-Z])+";;
+    static String re_delims = "\\W+";
+    static String re_notIdentifier = "\\s\\d\\w+";
 
     private Lab(){}
 
@@ -29,7 +30,7 @@ public final class Lab {
 
             while (reader.read(buf) != -1){
 
-                words = tokenize(new String(buf));
+                words = tokenize(clearedFromNotIdentifier(new String(buf)));
 
                 // region Last Word was Sliced
                 if(flagLastSliced){
@@ -68,7 +69,7 @@ public final class Lab {
 
             int wordUniques = noUniqueChar(word);
 
-            if (wordUniques == maxUniques)
+            if (wordUniques == maxUniques && !longestWords.contains(word))
                 longestWords.add(word);
             else if (wordUniques > maxUniques){
                 longestWords.clear();
@@ -77,6 +78,10 @@ public final class Lab {
             }
         }
         return maxUniques;
+    }
+
+    private static String clearedFromNotIdentifier(String str){
+        return str.replace(re_notIdentifier, "");
     }
 
     static private List<String> tokenize(String str){
