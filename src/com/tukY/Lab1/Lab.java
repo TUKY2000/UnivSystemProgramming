@@ -44,8 +44,8 @@ public final class Lab {
                 }
                 // endregion
 
-                for (int i = 0; i < words.size(); i++) {
-                    maxUniques = toProcess(longestWords, words.get(i), maxUniques, wordLenLim);
+                for (String word : words) {
+                    maxUniques = toProcess(longestWords, word, maxUniques, wordLenLim);
                 }
                 Arrays.fill(buf, '\u0000');  // clear buffer array
             }
