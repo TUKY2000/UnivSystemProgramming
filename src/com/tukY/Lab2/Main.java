@@ -48,9 +48,10 @@ public class Main {
      */
     public static void main(String[] args) {
         FiniteStateMachine fsm = new FiniteStateMachine(args[0]);
-
         List<String> words = generateWords(fsm.getAlphabet(), Integer.parseInt(args[1]));
 
-        System.out.print(isPossibleInFSM(fsm, words));
+        boolean res = isPossibleInFSM(fsm, words);
+
+        System.out.print(res);
     }
 }
