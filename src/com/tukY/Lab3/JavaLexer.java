@@ -1,5 +1,6 @@
 package com.tukY.Lab3;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class JavaLexer {
@@ -11,8 +12,16 @@ public class JavaLexer {
     private int column;
     //endregion
 
+
+    public JavaLexer() {
+        this("");
+    }
+
     public JavaLexer(String text) {
         this.text = text;
+        this.position = 0;
+        this.line = 0;
+        this.column = 0;
     }
 
     //region    Methods
@@ -21,34 +30,64 @@ public class JavaLexer {
     }
 
     public List<Token> getAll() {
-        return null;
+        List<Token> tokens = new ArrayList<>();
+        Token token;
+        while ((token = next()).getType() != TokenType.END){
+            tokens.add(token);
+        }
+        return tokens;
     }
     public Token next() {
+        if (position > text.length())
+            return new Token(TokenType.END, line, column);
+
+        char current = text.charAt(position);
+
+        if (Character.isLetter(current) || current == '_'){
+            return getIdentifier(current);      //  but can be IDENTIFIER
+
+            // Maybe I need read and then check if it is KEYWORD
+
+        } else if (Character.isDigit(current)) {
+            return getNumber(current);
+        } else if ("{}()[],;".indexOf(current) >= 0){
+            return getPunctuation(current);
+        } else if ("+-*/<>!=".indexOf(current) >= 0){
+            return getOperator(current);        //  but can be COMMENT
+
+            // Maybe I need read and then check if it is COMMENT
+
+        } else if (current == '\'' || current == '\"'){
+            return getSymbolic(current);
+        } else if (current == '#' || current == '@'){
+            return getDirective(current);
+        }
+
         return null;
     }
 
-    Token getIdentifier() {
+    Token getIdentifier(char current) {
         return null;
     }
-    Token getNumber() {
+    Token getNumber(char current) {
         return null;
     }
-    Token getSymbolic() {
+    Token getSymbolic(char current) {
         return null;
     }
-    Token getComment() {
+    Token getComment(char current) {
         return null;
     }
-    Token getDirective() {
+    Token getDirective(char current) {
         return null;
     }
-    Token getOperator() {
+    Token getOperator(char current) {
         return null;
     }
-    Token getKeyword() {
+    Token getKeyword(char current) {
         return null;
     }
-    Token getPunctuation() {
+    Token getPunctuation(char current) {
         return null;
     }
 

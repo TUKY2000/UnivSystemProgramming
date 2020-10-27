@@ -10,6 +10,16 @@ public class Token {
     private final int column;
     //endregion
 
+
+    //region    Constructors
+    public Token(int line, int col) {
+        this(TokenType.TYPELESS, line, col);
+    }
+
+    public Token(TokenType type, int line, int col) {
+        this("", "", type, line, col);
+    }
+
     public Token(String name, String value, TokenType type, int line, int col) {
         this.name = name;
         this.value = value;
@@ -17,6 +27,7 @@ public class Token {
         this.line = line;
         this.column = col;
     }
+    //endregion
 
     //region    Methods
     public String getName() {

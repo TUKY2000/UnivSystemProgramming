@@ -8,5 +8,8 @@ public enum TokenType {
     DIRECTIVE,
     OPERATOR,
     KEYWORD,
-    PUNCTUATION
+    PUNCTUATION,
+
+    TYPELESS,
+    END
 }
