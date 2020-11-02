@@ -15,6 +15,8 @@ public class FiniteStateMachine {
 
     private int count_alphabet;
     private int count_states;
+
+    private State init_state;
     //endregion
 
     //region Constructors
@@ -25,6 +27,10 @@ public class FiniteStateMachine {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public FiniteStateMachine(List<State> states, String transitions, int start){
+
     }
 
     private FiniteStateMachine(FiniteStateMachine machine, State state) {
@@ -47,45 +53,43 @@ public class FiniteStateMachine {
         return alphabet;
     }
 
-    public List<FiniteStateMachine> exec(String word){
-        List<FiniteStateMachine> res = new ArrayList<>();
+    public void exec(String word){
+        if (!isPossible(word))
+            throw new InvalidParameterException("Invalid word");
 
-        if (!word.isEmpty())
-            if (isPossible(word.charAt(0)))
-                res.addAll(exec(word.substring(1)));
+        for (char c: word.toCharArray())
+            exec(c);
+    }
 
-        return res.stream()
-                .filter(fsm -> fsm.state.isFinal())
-                .collect(Collectors.toList());
+    public void exec(char c) throws InvalidParameterException{
+        if(!isPossible(c))
+            throw new InvalidParameterException("Current state" + state +
+                    " has not transition : " + c);
+
+        this.state = state.exec(c);
     }
 
     public boolean isPossible(String word){
         if (word.isEmpty())
             return state.isFinal();
 
-        if (!isPossible(word.charAt(0)))
-            return false;
+        for (char c : word.toCharArray())
+            if(!isPossible(c))
+                return false;
 
-        return exec(word.charAt(0)).stream()
-                .anyMatch(fsm -> fsm.isPossible(word.substring(1)));
+        return true;
     }
 
+    public boolean isPossible(char c){
+        return state.isPossible(c);
+    }
+
+    public void reset(){
+        state = init_state;
+    }
 
     //endregion
     //region Private Functions
-    private List<FiniteStateMachine> exec(char c) throws InvalidParameterException{
-        if(!isPossible(c))
-            throw new InvalidParameterException("Current state has not transition : " + c);
-
-        return state.exec(c).stream()
-                .map(s -> new FiniteStateMachine(this, s))
-                .collect(Collectors.toList());
-    }
-
-    private boolean isPossible(char c){
-        return state.transitions.stream()
-                .anyMatch(tfn -> tfn.getTransitionFun() == c);
-    }
 
     private void readMachine(BufferedReader reader) throws IOException {
         count_alphabet = Integer.parseInt(reader.readLine());
@@ -101,7 +105,7 @@ public class FiniteStateMachine {
 
         states = getStates(reader, fstates);
 
-        state = states.get(start);
+        state = init_state = states.get(start);
     }
 
     private Map<Integer, State> getStates(BufferedReader reader, Set<Integer> fstates)
@@ -143,36 +147,18 @@ public class FiniteStateMachine {
 
     //region Inner Classes
 
-    public static class Transition{
-        private final char tfn;
-        private final State toState;
-
-        public Transition(char tfn, State toState) {
-            this.tfn = tfn;
-            this.toState = toState;
-        }
-
-        public char getTransitionFun() {
-            return tfn;
-        }
-
-        public State getState() {
-            return toState;
-        }
-    }
-
     public static class State{
         //region Fields
         private final int state;
         private final boolean isFinal;
-        private final Set<Transition> transitions;
+        private final Map<Character, State> transitions;
         //endregion
 
         //region Constructors
         public State(int state, boolean isFinal){
             this.state = state;
             this.isFinal = isFinal;
-            this.transitions = new HashSet<>();
+            this.transitions = new HashMap<>();
         }
 
         public State(int state){
@@ -189,15 +175,16 @@ public class FiniteStateMachine {
             return isFinal;
         }
 
-        public List<State> exec(char c){
-            return transitions.stream()
-                    .filter(tfn -> tfn.getTransitionFun() == c)
-                    .map(Transition::getState)
-                    .collect(Collectors.toList());
+        public boolean isPossible(char c){
+            return transitions.containsKey(c);
+        }
+
+        public State exec(char c){
+            return transitions.get(c);
         }
 
         public void addTransition(char transition, State state){
-            transitions.add(new Transition(transition, state));
+            transitions.putIfAbsent(transition, state);
         }
 
         public void addTransition(String transition, State state){
