@@ -3,7 +3,6 @@ package com.tukY.Lab3;
 public class Token {
 
     //region    Fields
-    private final String name;
     private final String value;
     private final TokenType type;
     private final int line;
@@ -17,11 +16,10 @@ public class Token {
     }
 
     public Token(TokenType type, int line, int col) {
-        this("", "", type, line, col);
+        this("", type, line, col);
     }
 
-    public Token(String name, String value, TokenType type, int line, int col) {
-        this.name = name;
+    public Token(String value, TokenType type, int line, int col) {
         this.value = value;
         this.type = type;
         this.line = line;
@@ -30,10 +28,6 @@ public class Token {
     //endregion
 
     //region    Methods
-    public String getName() {
-        return name;
-    }
-
     public String getValue() {
         return value;
     }
