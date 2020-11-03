@@ -1,6 +1,7 @@
 package com.tukY.Lab3;
 
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
@@ -14,6 +15,14 @@ public class Lab3 {
      */
     static void writeTokens(String filepath, List<Token> tokens, List<TokenType> ignore){
 
+        try (FileWriter writer = new FileWriter(filepath)){
+            for (Token token : tokens)
+                if (!ignore.contains(token.getType()))
+                    writer.write(token.toString());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
