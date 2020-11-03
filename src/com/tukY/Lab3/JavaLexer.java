@@ -4,18 +4,16 @@ import com.tukY.Lab2.FiniteStateMachine;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class JavaLexer {
 
     //region    Fields
-    private String filepath;
     private int line;
     private int column;
 
-    private BufferedReader reader;
+    private FileReader reader;
 
     //region    keywords
     private final static Set<String> keywords = Set.of(
@@ -35,22 +33,30 @@ public class JavaLexer {
     //region    FSMs
     private final static FiniteStateMachine FSM_IDENTIFIER  = new FiniteStateMachine("identifier.fsm");
     private final static FiniteStateMachine FSM_NUMBER      = new FiniteStateMachine("number.fsm");
-    private final static FiniteStateMachine FSM_SYMBOLIC    = new FiniteStateMachine("symbolic.fsm");
+    private final static FiniteStateMachine FSM_SYMBOLIC    = new FiniteStateMachine("literal.fsm");
     private final static FiniteStateMachine FSM_COMMENT     = new FiniteStateMachine("comment.fsm");
     private final static FiniteStateMachine FSM_OPERATOR    = new FiniteStateMachine("operator.fsm");
     private final static FiniteStateMachine FSM_PUNCTUATION = new FiniteStateMachine("punctuation.fsm");
     //endregion
     //endregion
 
-    public JavaLexer(String filepath) throws FileNotFoundException {
-        this.filepath = filepath;
+
+    public JavaLexer() {
         this.line = 0;
         this.column = 0;
+    }
 
-        reader = new BufferedReader(new FileReader(filepath));
+    public JavaLexer(String filepath) throws FileNotFoundException {
+        open(filepath);
     }
 
     //region    Methods
+    public void open(String filepath) throws FileNotFoundException {
+        this.reader = new FileReader(filepath);
+        this.line = 0;
+        this.column = 0;
+    }
+
     public void close() throws IOException {
         reader.close();
     }
@@ -102,10 +108,10 @@ public class JavaLexer {
             return getOperator(current);
 
         } else if (FSM_SYMBOLIC.isPossible(current)){
-            return getSymbolic(current);
+            return getLiteral(current);
         }
 
-        return null;
+        return new Token(String.valueOf(current), TokenType.TYPELESS, line, column);
     }
     //endregion
 
@@ -151,7 +157,7 @@ public class JavaLexer {
         return number;
     }
 
-    Token getSymbolic(char start) throws IOException {
+    Token getLiteral(char start) throws IOException {
         char next = start;
         StringBuilder lexeme = new StringBuilder();
 
@@ -165,7 +171,7 @@ public class JavaLexer {
 
         Token symbolic = null;
         if (FSM_SYMBOLIC.getCurrentState().isFinal())
-            symbolic = new Token(lexeme.toString(), TokenType.SYMBOLIC, line, column);
+            symbolic = new Token(lexeme.toString(), TokenType.LITERAL, line, column);
         else reader.reset();
 
         FSM_SYMBOLIC.reset();
