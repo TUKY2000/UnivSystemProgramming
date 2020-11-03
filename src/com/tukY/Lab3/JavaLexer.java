@@ -10,9 +10,6 @@ import java.util.Set;
 public class JavaLexer {
 
     //region    Fields
-    private int line;
-    private int column;
-
     private int code;
 
     private BufferedReader reader;
@@ -47,10 +44,7 @@ public class JavaLexer {
     //endregion
 
 
-    public JavaLexer() {
-        this.line = 1;
-        this.column = 1;
-    }
+    public JavaLexer() {}
 
     public JavaLexer(String filepath) throws IOException {
         open(filepath);
@@ -60,8 +54,6 @@ public class JavaLexer {
     //region    Methods
     public void open(String filepath) throws FileNotFoundException {
         this.reader = new BufferedReader(new FileReader(filepath));
-        this.line = 1;
-        this.column = 1;
     }
 
     public void close() throws IOException {
@@ -80,25 +72,15 @@ public class JavaLexer {
     public Token next() throws IOException {
         char current;
 
-        //  find token's start symbol
-        while (true) {
-            //  skip whitespaces
-            if ((current = (char) code) == '\n') {
-                line++;
-                column = 0;
-            } else if (current == ' '){
-                column++;
-            } else if (current == '\t'){
-                column += 4;
-            } else if (!Character.isWhitespace(code) && code != -1)
-                break;
+        //  find token's start symbol && skip whitespaces
+        while (Character.isWhitespace(code) || code == -1) {
 
             //  EOF
             if ((code = reader.read()) == -1)
                 return new Token(TokenType.END);
         }
 
-        if (FSM_IDENTIFIER.isPossible(current)){
+        if (FSM_IDENTIFIER.isPossible(current = (char) code)){
             return getIdentifierOrKeyword(current);
 
         } else if (FSM_NUMBER.isPossible(current)) {
@@ -131,7 +113,6 @@ public class JavaLexer {
         do {
             lexeme.append(next);
             FSM_IDENTIFIER.exec(next);
-            column++;
 
         } while (FSM_IDENTIFIER.isPossible(next = (char) (code = reader.read())));
 
@@ -150,7 +131,6 @@ public class JavaLexer {
         do {
             lexeme.append(next);
             FSM_NUMBER.exec(next);
-            column++;
 
         } while (FSM_NUMBER.isPossible(next = (char) (code = reader.read())));
 
@@ -171,7 +151,6 @@ public class JavaLexer {
         do {
             lexeme.append(next);
             FSM_LITERAL.exec(next);
-            column++;
 
         } while (FSM_LITERAL.isPossible(next = (char) (code = reader.read())));
 
@@ -192,7 +171,6 @@ public class JavaLexer {
         do {
             lexeme.append(next);
             FSM_COMMENT.exec(next);
-            column++;
 
         } while (FSM_COMMENT.isPossible(next = (char) (code = reader.read())));
 
@@ -209,11 +187,10 @@ public class JavaLexer {
         char next = start;
         StringBuilder lexeme = new StringBuilder();
 
-        reader.mark(10);
+        reader.mark(5);
         do {
             lexeme.append(next);
             FSM_OPERATOR.exec(next);
-            column++;
 
         } while (FSM_OPERATOR.isPossible(next = (char) (code = reader.read())));
 
@@ -234,7 +211,6 @@ public class JavaLexer {
         do {
             lexeme.append(next);
             FSM_PUNCTUATION.exec(next);
-            column++;
 
         } while (FSM_PUNCTUATION.isPossible(next = (char) (code = reader.read())));
 

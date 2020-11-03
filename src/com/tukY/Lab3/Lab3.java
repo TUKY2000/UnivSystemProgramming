@@ -16,7 +16,7 @@ public class Lab3 {
 
         try (FileWriter writer = new FileWriter(filepath)){
             for (Token token : tokens)
-//                if (!ignore.contains(token.getType()))
+                if (!ignore.contains(token.getType()))
                     writer.write(token.toString() + '\n');
 
         } catch (IOException e) {
