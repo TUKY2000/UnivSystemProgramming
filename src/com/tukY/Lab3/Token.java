@@ -43,5 +43,13 @@ public class Token {
     public int getColumn() {
         return column;
     }
+
+    @Override
+    public String toString() {
+        return "<" + value
+                + ">    -    <"
+                + type + '>';
+    }
+
     //endregion
 }
