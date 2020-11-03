@@ -33,8 +33,9 @@ public class FiniteStateMachine {
 
     }
 
-    private FiniteStateMachine(FiniteStateMachine machine, State state) {
-        this.state = state;
+    private FiniteStateMachine(FiniteStateMachine machine) {
+        this.state = machine.state;
+        this.init_state = machine.init_state;
         this.states = machine.states;
         this.count_states = machine.count_states;
         this.count_alphabet = machine.count_alphabet;
@@ -44,6 +45,12 @@ public class FiniteStateMachine {
 
 
     //region Methods
+
+    public FiniteStateMachine append(int state0, char transition, int state1){
+        FiniteStateMachine fsm = new FiniteStateMachine(this);
+        fsm.states.get(state0).addTransition(transition, fsm.states.get(state1));
+        return fsm;
+    }
 
     public State getCurrentState() {
         return state;
