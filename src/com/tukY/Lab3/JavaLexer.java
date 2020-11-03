@@ -4,7 +4,9 @@ import com.tukY.Lab2.FiniteStateMachine;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class JavaLexer {
 
@@ -15,13 +17,27 @@ public class JavaLexer {
 
     private BufferedReader reader;
 
+    //region    keywords
+    private final static Set<String> keywords = Set.of(
+              "abstract"    , "continue"    , "for"         , "package"     , "synchronized"
+            , "assert"      , "default"     , "if"          , "private"     , "this"
+            , "boolean"     , "do"          , "implements"  , "protected"   , "throw"
+            , "break"       , "double"      , "import"      , "public"      , "throws"
+            , "byte"        , "else"        , "instanceof"  , "return"      , "transient"
+            , "case"        , "enum"        , "int"         , "short"       , "try"
+            , "catch"       , "extends"     , "interface"   , "static"      , "void"
+            , "char"        , "final"       , "long"        , "strictfp"    , "volatile"
+            , "class"       , "finally"     , "native"      , "super"       , "while"
+            , "const"       , "float"       , "new"         , "switch"
+    );
+    //endregion
+
     //region    FSMs
     private final static FiniteStateMachine FSM_IDENTIFIER  = new FiniteStateMachine("identifier.fsm");
     private final static FiniteStateMachine FSM_NUMBER      = new FiniteStateMachine("number.fsm");
     private final static FiniteStateMachine FSM_SYMBOLIC    = new FiniteStateMachine("symbolic.fsm");
     private final static FiniteStateMachine FSM_COMMENT     = new FiniteStateMachine("comment.fsm");
     private final static FiniteStateMachine FSM_OPERATOR    = new FiniteStateMachine("operator.fsm");
-    private final static FiniteStateMachine FSM_KEYWORD     = new FiniteStateMachine("keyword.fsm");
     private final static FiniteStateMachine FSM_PUNCTUATION = new FiniteStateMachine("punctuation.fsm");
     //endregion
     //endregion
@@ -70,8 +86,7 @@ public class JavaLexer {
         }
 
         if (FSM_IDENTIFIER.isPossible(current)){
-            Token token = getKeyword(current);
-            return token == null ? token : getIdentifier(current);
+            return getIdentifierOrKeyword(current);
 
         } else if (FSM_NUMBER.isPossible(current)) {
             return getNumber(current);
@@ -96,7 +111,7 @@ public class JavaLexer {
 
 
     //region Recognisers
-    Token getIdentifier(char start) throws IOException {
+    Token getIdentifierOrKeyword(char start) throws IOException {
 
         char next = start;
         StringBuilder lexeme = new StringBuilder();
@@ -109,29 +124,9 @@ public class JavaLexer {
         } while (FSM_IDENTIFIER.isPossible(next = (char) reader.read()));
 
         FSM_IDENTIFIER.reset();
-        return new Token(lexeme.toString(), TokenType.IDENTIFIER, line, column);
-    }
-
-    Token getKeyword(char start) throws IOException {
-
-        char next = start;
-        StringBuilder lexeme = new StringBuilder();
-
-        reader.mark(10);
-        do {
-            lexeme.append(next);
-            FSM_KEYWORD.exec(next);
-            column++;
-
-        } while (FSM_KEYWORD.isPossible(next = (char) reader.read()));
-
-        Token keyword = null;
-        if (FSM_KEYWORD.getCurrentState().isFinal())
-            keyword = new Token(lexeme.toString(), TokenType.KEYWORD, line, column);
-        else reader.reset();
-
-        FSM_KEYWORD.reset();
-        return keyword;
+        return keywords.contains(lexeme.toString()) ?
+                new Token(lexeme.toString(), TokenType.KEYWORD, line, column) :
+                new Token(lexeme.toString(), TokenType.IDENTIFIER, line, column);
     }
 
     Token getNumber(char start) throws IOException {
