@@ -20,7 +20,6 @@ public class JavaLexer {
     private final static FiniteStateMachine FSM_NUMBER      = new FiniteStateMachine("number.fsm");
     private final static FiniteStateMachine FSM_SYMBOLIC    = new FiniteStateMachine("symbolic.fsm");
     private final static FiniteStateMachine FSM_COMMENT     = new FiniteStateMachine("comment.fsm");
-    private final static FiniteStateMachine FSM_DIRECTIVE   = new FiniteStateMachine("directive.fsm");
     private final static FiniteStateMachine FSM_OPERATOR    = new FiniteStateMachine("operator.fsm");
     private final static FiniteStateMachine FSM_KEYWORD     = new FiniteStateMachine("keyword.fsm");
     private final static FiniteStateMachine FSM_PUNCTUATION = new FiniteStateMachine("punctuation.fsm");
@@ -53,6 +52,7 @@ public class JavaLexer {
         char current;
         int code;
 
+        //  find token's start symbol
         while (true) {
             //  EOF
             if ((code = reader.read()) == -1)
@@ -88,9 +88,6 @@ public class JavaLexer {
 
         } else if (FSM_SYMBOLIC.isPossible(current)){
             return getSymbolic(current);
-
-        } else if (FSM_DIRECTIVE.isPossible(current)){
-            return getDirective(current);
         }
 
         return null;
@@ -199,10 +196,6 @@ public class JavaLexer {
 
         FSM_COMMENT.reset();
         return comment;
-    }
-
-    Token getDirective(char start) {    //  JAVA DOES NOT HAVE PREPROCESSORS
-        return null;
     }
 
     Token getOperator(char start) throws IOException {

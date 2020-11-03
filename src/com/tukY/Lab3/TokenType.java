@@ -5,7 +5,6 @@ public enum TokenType {
     NUMBER,
     SYMBOLIC,
     COMMENT,
-    DIRECTIVE,
     OPERATOR,
     KEYWORD,
     PUNCTUATION,
