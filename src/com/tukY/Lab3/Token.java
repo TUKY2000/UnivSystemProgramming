@@ -5,25 +5,21 @@ public class Token {
     //region    Fields
     private final String value;
     private final TokenType type;
-    private final int line;
-    private final int column;
     //endregion
 
 
     //region    Constructors
-    public Token(int line, int col) {
-        this(TokenType.TYPELESS, line, col);
+    public Token() {
+        this(TokenType.TYPELESS);
     }
 
-    public Token(TokenType type, int line, int col) {
-        this("", type, line, col);
+    public Token(TokenType type) {
+        this("", type);
     }
 
-    public Token(String value, TokenType type, int line, int col) {
+    public Token(String value, TokenType type) {
         this.value = value;
         this.type = type;
-        this.line = line;
-        this.column = col;
     }
     //endregion
 
@@ -36,18 +32,10 @@ public class Token {
         return type;
     }
 
-    public int getRow() {
-        return line;
-    }
-
-    public int getColumn() {
-        return column;
-    }
-
     @Override
     public String toString() {
         return "<" + value
-                + ">    -    <"
+                + ">\t-\t<"
                 + type + '>';
     }
 

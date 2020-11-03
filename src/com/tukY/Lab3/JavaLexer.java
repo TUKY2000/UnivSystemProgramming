@@ -13,7 +13,9 @@ public class JavaLexer {
     private int line;
     private int column;
 
-    private FileReader reader;
+    private int code;
+
+    private BufferedReader reader;
 
     //region    keywords
     private final static Set<String> keywords = Set.of(
@@ -31,30 +33,35 @@ public class JavaLexer {
     //endregion
 
     //region    FSMs
-    private final static FiniteStateMachine FSM_IDENTIFIER  = new FiniteStateMachine("identifier.fsm");
-    private final static FiniteStateMachine FSM_NUMBER      = new FiniteStateMachine("number.fsm");
-    private final static FiniteStateMachine FSM_SYMBOLIC    = new FiniteStateMachine("literal.fsm");
-    private final static FiniteStateMachine FSM_COMMENT     = new FiniteStateMachine("comment.fsm");
-    private final static FiniteStateMachine FSM_OPERATOR    = new FiniteStateMachine("operator.fsm");
-    private final static FiniteStateMachine FSM_PUNCTUATION = new FiniteStateMachine("punctuation.fsm");
+    private final static FiniteStateMachine FSM_IDENTIFIER  = new FiniteStateMachine("res/Lab3/fsm/identifier.fsm");
+    private final static FiniteStateMachine FSM_NUMBER      = new FiniteStateMachine("res/Lab3/fsm/number.fsm");
+    private final static FiniteStateMachine FSM_LITERAL     = new FiniteStateMachine("res/Lab3/fsm/literal.fsm");
+    private final static FiniteStateMachine FSM_OPERATOR    = new FiniteStateMachine("res/Lab3/fsm/operator.fsm");
+    private final static FiniteStateMachine FSM_PUNCTUATION = new FiniteStateMachine("res/Lab3/fsm/punctuation.fsm");
+    private final static FiniteStateMachine FSM_COMMENT     = new FiniteStateMachine("res/Lab3/fsm/comment.fsm")
+                                                                .append(3, '\n', 6).append(4, '\n', 4)
+                                                                .append(3, ' ', 3).append(4, ' ', 4)
+                                                                .append(5, '\n', 4).append(5, ' ', 4)
+                                                                .append(4, '\r', 4).append(5, '\r', 4);
     //endregion
     //endregion
 
 
     public JavaLexer() {
-        this.line = 0;
-        this.column = 0;
+        this.line = 1;
+        this.column = 1;
     }
 
-    public JavaLexer(String filepath) throws FileNotFoundException {
+    public JavaLexer(String filepath) throws IOException {
         open(filepath);
+        code = reader.read();
     }
 
     //region    Methods
     public void open(String filepath) throws FileNotFoundException {
-        this.reader = new FileReader(filepath);
-        this.line = 0;
-        this.column = 0;
+        this.reader = new BufferedReader(new FileReader(filepath));
+        this.line = 1;
+        this.column = 1;
     }
 
     public void close() throws IOException {
@@ -72,14 +79,9 @@ public class JavaLexer {
 
     public Token next() throws IOException {
         char current;
-        int code;
 
         //  find token's start symbol
         while (true) {
-            //  EOF
-            if ((code = reader.read()) == -1)
-                return new Token(TokenType.END, line, column);
-
             //  skip whitespaces
             if ((current = (char) code) == '\n') {
                 line++;
@@ -88,7 +90,12 @@ public class JavaLexer {
                 column++;
             } else if (current == '\t'){
                 column += 4;
-            } else break;
+            } else if (!Character.isWhitespace(code) && code != -1)
+                break;
+
+            //  EOF
+            if ((code = reader.read()) == -1)
+                return new Token(TokenType.END);
         }
 
         if (FSM_IDENTIFIER.isPossible(current)){
@@ -102,23 +109,22 @@ public class JavaLexer {
 
         } else if (current == '/') {
             Token token = getComment(current);
-            return token == null ? token : getOperator(current);
+            return token == null ? getOperator(current) : token;
 
         } else if (FSM_OPERATOR.isPossible(current)){
             return getOperator(current);
 
-        } else if (FSM_SYMBOLIC.isPossible(current)){
+        } else if (FSM_LITERAL.isPossible(current)){
             return getLiteral(current);
         }
 
-        return new Token(String.valueOf(current), TokenType.TYPELESS, line, column);
+        return new Token(String.valueOf(current), TokenType.TYPELESS);
     }
     //endregion
 
 
     //region Recognisers
     Token getIdentifierOrKeyword(char start) throws IOException {
-
         char next = start;
         StringBuilder lexeme = new StringBuilder();
 
@@ -127,12 +133,12 @@ public class JavaLexer {
             FSM_IDENTIFIER.exec(next);
             column++;
 
-        } while (FSM_IDENTIFIER.isPossible(next = (char) reader.read()));
+        } while (FSM_IDENTIFIER.isPossible(next = (char) (code = reader.read())));
 
         FSM_IDENTIFIER.reset();
         return keywords.contains(lexeme.toString()) ?
-                new Token(lexeme.toString(), TokenType.KEYWORD, line, column) :
-                new Token(lexeme.toString(), TokenType.IDENTIFIER, line, column);
+                new Token(lexeme.toString(), TokenType.KEYWORD) :
+                new Token(lexeme.toString(), TokenType.IDENTIFIER);
     }
 
     Token getNumber(char start) throws IOException {
@@ -146,11 +152,11 @@ public class JavaLexer {
             FSM_NUMBER.exec(next);
             column++;
 
-        } while (FSM_NUMBER.isPossible(next = (char) reader.read()));
+        } while (FSM_NUMBER.isPossible(next = (char) (code = reader.read())));
 
         Token number = null;
         if (FSM_NUMBER.getCurrentState().isFinal())
-            number = new Token(lexeme.toString(), TokenType.NUMBER, line, column);
+            number = new Token(lexeme.toString(), TokenType.NUMBER);
         else reader.reset();
 
         FSM_NUMBER.reset();
@@ -164,17 +170,17 @@ public class JavaLexer {
         reader.mark(10);
         do {
             lexeme.append(next);
-            FSM_SYMBOLIC.exec(next);
+            FSM_LITERAL.exec(next);
             column++;
 
-        } while (FSM_SYMBOLIC.isPossible(next = (char) reader.read()));
+        } while (FSM_LITERAL.isPossible(next = (char) (code = reader.read())));
 
         Token symbolic = null;
-        if (FSM_SYMBOLIC.getCurrentState().isFinal())
-            symbolic = new Token(lexeme.toString(), TokenType.LITERAL, line, column);
+        if (FSM_LITERAL.getCurrentState().isFinal())
+            symbolic = new Token(lexeme.toString(), TokenType.LITERAL);
         else reader.reset();
 
-        FSM_SYMBOLIC.reset();
+        FSM_LITERAL.reset();
         return symbolic;
     }
 
@@ -182,17 +188,17 @@ public class JavaLexer {
         char next = start;
         StringBuilder lexeme = new StringBuilder();
 
-        reader.mark(10);
+        reader.mark(1000);
         do {
             lexeme.append(next);
             FSM_COMMENT.exec(next);
             column++;
 
-        } while (FSM_COMMENT.isPossible(next = (char) reader.read()));
+        } while (FSM_COMMENT.isPossible(next = (char) (code = reader.read())));
 
         Token comment = null;
         if (FSM_COMMENT.getCurrentState().isFinal())
-            comment = new Token(lexeme.toString(), TokenType.COMMENT, line, column);
+            comment = new Token(lexeme.toString(), TokenType.COMMENT);
         else reader.reset();
 
         FSM_COMMENT.reset();
@@ -209,11 +215,11 @@ public class JavaLexer {
             FSM_OPERATOR.exec(next);
             column++;
 
-        } while (FSM_OPERATOR.isPossible(next = (char) reader.read()));
+        } while (FSM_OPERATOR.isPossible(next = (char) (code = reader.read())));
 
         Token operator = null;
         if (FSM_OPERATOR.getCurrentState().isFinal())
-            operator = new Token(lexeme.toString(), TokenType.OPERATOR, line, column);
+            operator = new Token(lexeme.toString(), TokenType.OPERATOR);
         else reader.reset();
 
         FSM_OPERATOR.reset();
@@ -230,11 +236,11 @@ public class JavaLexer {
             FSM_PUNCTUATION.exec(next);
             column++;
 
-        } while (FSM_PUNCTUATION.isPossible(next = (char) reader.read()));
+        } while (FSM_PUNCTUATION.isPossible(next = (char) (code = reader.read())));
 
         Token punctuation = null;
         if (FSM_PUNCTUATION.getCurrentState().isFinal())
-            punctuation = new Token(lexeme.toString(), TokenType.PUNCTUATION, line, column);
+            punctuation = new Token(lexeme.toString(), TokenType.PUNCTUATION);
         else reader.reset();
 
         FSM_PUNCTUATION.reset();
