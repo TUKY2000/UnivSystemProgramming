@@ -25,21 +25,24 @@ public class JavaLexer {
             , "catch"       , "extends"     , "interface"   , "static"      , "void"
             , "char"        , "final"       , "long"        , "strictfp"    , "volatile"
             , "class"       , "finally"     , "native"      , "super"       , "while"
-            , "const"       , "float"       , "new"         , "switch"
+            , "const"       , "float"       , "new"         , "switch"      , "true"
+            , "false"
     );
     //endregion
 
     //region    FSMs
     private final static FiniteStateMachine FSM_IDENTIFIER  = new FiniteStateMachine("res/Lab3/fsm/identifier.fsm");
     private final static FiniteStateMachine FSM_NUMBER      = new FiniteStateMachine("res/Lab3/fsm/number.fsm");
-    private final static FiniteStateMachine FSM_LITERAL     = new FiniteStateMachine("res/Lab3/fsm/literal.fsm");
     private final static FiniteStateMachine FSM_OPERATOR    = new FiniteStateMachine("res/Lab3/fsm/operator.fsm");
     private final static FiniteStateMachine FSM_PUNCTUATION = new FiniteStateMachine("res/Lab3/fsm/punctuation.fsm");
+    private final static FiniteStateMachine FSM_LITERAL     = new FiniteStateMachine("res/Lab3/fsm/literal.fsm")
+                                                                .append(2, ' ', 2).append(3, ' ', 3);
     private final static FiniteStateMachine FSM_COMMENT     = new FiniteStateMachine("res/Lab3/fsm/comment.fsm")
                                                                 .append(3, '\n', 6).append(4, '\n', 4)
                                                                 .append(3, ' ', 3).append(4, ' ', 4)
                                                                 .append(5, '\n', 4).append(5, ' ', 4)
-                                                                .append(4, '\r', 4).append(5, '\r', 4);
+                                                                .append(4, '\r', 4).append(3, '\r', 6)
+                                                                .append(5, '\r', 4);
     //endregion
     //endregion
 
@@ -127,7 +130,7 @@ public class JavaLexer {
         char next = start;
         StringBuilder lexeme = new StringBuilder();
 
-        reader.mark(10);
+        reader.mark(64);
         do {
             lexeme.append(next);
             FSM_NUMBER.exec(next);
@@ -147,7 +150,7 @@ public class JavaLexer {
         char next = start;
         StringBuilder lexeme = new StringBuilder();
 
-        reader.mark(10);
+        reader.mark(1024);
         do {
             lexeme.append(next);
             FSM_LITERAL.exec(next);
@@ -167,7 +170,7 @@ public class JavaLexer {
         char next = start;
         StringBuilder lexeme = new StringBuilder();
 
-        reader.mark(1000);
+        reader.mark(1024);
         do {
             lexeme.append(next);
             FSM_COMMENT.exec(next);
