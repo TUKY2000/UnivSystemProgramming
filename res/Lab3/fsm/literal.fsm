@@ -7,10 +7,12 @@
 2 qwertyuiopasdfghjklzxcvbnm 2
 2 QWERTYUIOPASDFGHJKLZXCVBNM 2
 2 1234567890 2
-2 !@#$%^&*()_+-=/<>;:,.?'\[]{}| 2
+2 0x20 2
+2 !@#$%^&*()_+-=/<>;:,.?'\n\r\t\\[]{}| 2
 2 " 4
 3 qwertyuiopasdfghjklzxcvbnm 3
 3 QWERTYUIOPASDFGHJKLZXCVBNM 3
 3 1234567890 3
-3 !@#$%^&*()_+-=/<>;:,.?"\[]{}| 3
+3 0x20 3
+3 !@#$%^&*()_+-=/<>;:,.?"\n\r\t\\[]{}| 3
 3 ' 4

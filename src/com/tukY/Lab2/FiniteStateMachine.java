@@ -83,7 +83,6 @@ public class FiniteStateMachine {
         for (char c : word.toCharArray())
             if(!isPossible(c))
                 return false;
-
         return true;
     }
 
@@ -195,10 +194,27 @@ public class FiniteStateMachine {
         }
 
         public void addTransition(String transition, State state){
-            for (char c : transition.toCharArray())
-                addTransition(c, state);
+            char t;
+            for (int i = 0; i < transition.length(); i++) {
+                if ((t = transition.charAt(i)) == '\\') {
+                    String s = String.valueOf(t) + transition.charAt(++i);
+                    t = s.charAt(0);
+                }
+                else if (t == '0' && transition.charAt(i+1) == 'x'){
+                    StringBuilder code = new StringBuilder(String.valueOf(t));
+                    code.append(transition.charAt(++i));
+                    while (Character.isDigit(transition.charAt(i+1)))
+                        code.append(transition.charAt(++i));
+                    t = getCharFromCode(Integer.parseInt(code.toString()));
+                }
+                addTransition(t, state);
+            }
         }
         //endregion
+
+        private char getCharFromCode(int code){
+            return (char) code;
+        }
     }
     //endregion
 }
