@@ -1,18 +1,16 @@
 package com.tukY.Lab4;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class Philosopher extends Thread {
 
     protected final Fork forkL;
     protected final Fork forkR;
-    protected final AtomicInteger eaten;
+    protected int eaten;
 
     public Philosopher(String name, Fork leftFork, Fork rightFork) {
-        super("Philosopher" + name);
+        super("Philosopher " + name);
         this.forkL = leftFork;
         this.forkR = rightFork;
-        this.eaten = new AtomicInteger(0);
+        this.eaten = 0;
     }
 
     protected boolean TakeForks(){
@@ -25,10 +23,7 @@ public class Philosopher extends Thread {
             f2 = forkL;
         }
 
-        f1.get();
-        f2.get();
-
-        return false;
+        return TakeFork(f1) && TakeFork(f2);
     }
     protected boolean TakeFork(Fork fork){
         return fork.get();
@@ -52,29 +47,26 @@ public class Philosopher extends Thread {
     }
 
     protected void eat() {
-        synchronized (System.out) {
-            System.out.println(getName() + "\t is eating");
-        }
+        System.out.println(getName() + "\t is eating");
+
         try {
             Thread.sleep(2300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        synchronized (System.out) {
-            System.out.println(getName() + "\t finished eating");
-        }
-        eaten.incrementAndGet();
+
+        System.out.println(getName() + "\t finished eating");
+        eaten++;
         PutForks();
     }
 
     public int EatenCount() {
-        return eaten.get();
+        return eaten;
     }
 
     protected void speak() {
-        synchronized (System.out) {
-            System.out.println(getName() + "\t is speaking");
-        }
+        System.out.println(getName() + "\t is speaking");
+
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -83,9 +75,8 @@ public class Philosopher extends Thread {
     }
 
     protected void waitForFork(Fork fork){
-        synchronized (System.out) {
-            System.out.println(getName() + "\t is waiting for fork");
-        }
+        System.out.println(getName() + "\t is waiting for fork");
+
         while (!TakeFork(fork)) { Thread.onSpinWait(); }
     }
 

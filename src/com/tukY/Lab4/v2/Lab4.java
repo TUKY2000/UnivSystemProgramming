@@ -21,9 +21,9 @@ public class Lab4 {
         Waiter waiter = new Waiter();
 
         List<Philosopher> Philosophers = Stream.concat(Stream
-                        .of(new PhilosopherReq("0", Forks.get(0), Forks.get(count-1), waiter))
-                ,IntStream.range(0, count - 1)
-                        .mapToObj(i -> new PhilosopherReq(String.valueOf(i + 1), Forks.get(i), Forks.get(i+1), waiter)))
+                        .of(new PhilosopherReq("0", Forks.get(count-1), Forks.get(0), waiter))
+                ,IntStream.range(1, count)
+                        .mapToObj(i -> new PhilosopherReq(String.valueOf(i), Forks.get(i-1), Forks.get(i), waiter)))
                 .peek(Thread::start)
                 .collect(Collectors.toList());
 

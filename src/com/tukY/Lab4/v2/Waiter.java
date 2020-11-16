@@ -8,13 +8,13 @@ import java.util.Map;
 
 public class Waiter{
 
-    private volatile Map<Philosopher, Fork> reserved;
+    private final Map<Philosopher, Fork> reserved;
 
     public Waiter() {
         reserved = new HashMap<>();
     }
 
-    public synchronized boolean request(Philosopher philosopher, Fork fork){
+    public boolean request(Philosopher philosopher, Fork fork){
         if (reserved.containsKey(philosopher) && reserved.get(philosopher) == fork){
             reserved.remove(philosopher);
             return true;
@@ -28,7 +28,6 @@ public class Waiter{
         Fork another = philosopher.getLeftFork() == fork ?
                 philosopher.getRightFork() : philosopher.getLeftFork();
 
-        philosopher.getLeftFork().get();
         reserved.put(philosopher, another);
         return true;
 

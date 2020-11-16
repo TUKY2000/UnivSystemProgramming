@@ -2,6 +2,8 @@ package com.tukY.Lab4.v1;
 
 import com.tukY.Lab4.Fork;
 import com.tukY.Lab4.Philosopher;
+import com.tukY.Lab4.v2.PhilosopherReq;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -25,9 +27,9 @@ public class Lab4 {
 
 
         List<Philosopher> Philosophers = Stream.concat(Stream
-                        .of(new Philosopher("0", Forks.get(0), Forks.get(count-1)))
-                ,IntStream.range(0, count - 1)
-                .mapToObj(i -> new Philosopher(String.valueOf(i + 1), Forks.get(i), Forks.get(i+1))))
+                        .of(new Philosopher("0", Forks.get(count-1), Forks.get(0)))
+                ,IntStream.range(1, count)
+                        .mapToObj(i -> new Philosopher(String.valueOf(i), Forks.get(i-1), Forks.get(i))))
                 .peek(Thread::start)
                 .collect(Collectors.toList());
 

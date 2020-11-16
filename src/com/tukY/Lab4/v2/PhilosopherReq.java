@@ -19,21 +19,21 @@ public class PhilosopherReq extends Philosopher {
 
     @Override
     protected boolean TakeForks() {
-        return request(forkL) && request(forkR);
+        return TakeFork(forkL) && TakeFork(forkR);
     }
 
     @Override
     protected boolean TakeFork(Fork fork) {
         synchronized (waiter){
-            return request(fork);
+            if (request(fork))
+                return fork.get();
+            return false;
         }
     }
 
     @Override
     protected void waitForFork(Fork fork) {
-        synchronized (System.out) {
-            System.out.println(getName() + "\t did not get forks");
-        }
+        System.out.println(getName() + "\t did not get forks");
     }
 
     @Override
